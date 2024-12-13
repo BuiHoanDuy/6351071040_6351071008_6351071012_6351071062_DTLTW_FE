@@ -1,5 +1,6 @@
 import Button from '@components/Button';
 import AccountGirl from '@components/Icons/AccountGirl';
+import styles from './Account.module.scss';
 import Close from '@components/Icons/Close';
 import Edit from '@components/Icons/Edit';
 import Finished from '@components/Icons/Finished';
@@ -39,6 +40,7 @@ import {
   initialShippingInfoState,
   initialUserInfoState,
 } from './reducer';
+import dayjs from 'dayjs';
 export enum OrderStatus {
   ALL = 'ALL',
   CONFIRMING = 'CONFIRMING',
@@ -70,6 +72,7 @@ interface Product {
 interface OrderType {
   id: string;
   prods: Product[];
+  created_at: string;
 }
 
 const Account = () => {
@@ -169,6 +172,7 @@ const Account = () => {
           responseData.map((item: any) => ({
             id: '#' + item.id.slice(0, 8),
             prods: item.list_products,
+            created_at: dayjs(item.created_at).format('DD/MM/YYYY'),
           })),
         );
       }
@@ -484,12 +488,13 @@ const Account = () => {
   };
 
   return (
-    <div className='px-16 pb-14'>
+    <div className={styles.Account}>
       <div>
-        <div className='flex justify-between items-end pb-7 border-b-[0.5px] border-[#c9c5c9]'>
-          <div className=''>
+        <div className='flex justify-between items-end pb-7 border-b-[0.5px] border-[#c9c5c9] pl-[180px] Account-block h-[200px]'>
+          <div className='Account-icon'>
             <AccountGirl></AccountGirl>
           </div>
+          <h3>Hello, {userInfo?.name}</h3>
           <div className='flex items-center gap-4 max-w-[360px] w-full'>
             <Button onClick={handleSignOut} isPrimary className=''>
               Sign Out
@@ -649,54 +654,70 @@ const Account = () => {
                   items
                 </p>
               </div>
-              {oderData.length ? (
-                oderData.map((order: OrderType) => (
-                  <div className='bg-[#EBF4EB] py-5 px-8 mb-4'>
-                    <h5 className='mb-4 text-xl'>ID: {order.id}</h5>
-                    <div className='flex flex-col gap-4'>
-                      {order.prods.map((prod) =>
-                        prod.variants.map((variant) => (
-                          <div className='flex items-center justify-between'>
-                            <div className='flex items-center gap-2 max-w-[400px] w-full'>
-                              <div className='flex-[0_0_86px] min-w-[86px] w-full'>
-                                <img src={variant.Images} alt='' />
-                              </div>
-                              <div className=''>
-                                <h5 className='text-sm leading-[1.5]'>{prod.name}</h5>
-                                <div className='text-xs font-[gilroy-light]'>
-                                  Color:{' '}
-                                  <span
-                                    className={`w-3 h-3 rounded-full bg-[${variant.Color}] inline-block`}
-                                  ></span>
+              {loading ? (
+                <p className='text-center'>Loading ...</p>
+              ) : oderData.length ? (
+                oderData.map((order: OrderType) => {
+                  console.log(order);
+                  const orderDate = new Date(order.created_at);
+                  const formattedDate = order.created_at;
+                  return (
+                    <div className='bg-[#EBF4EB] py-5 px-8 mb-4'>
+                      <div className='flex justify-between'>
+                        <h5 className='mb-4 text-xl'>ID: {order.id}</h5>
+                        <p className=''> Order Date: {formattedDate}</p>
+                      </div>
+                      <div className='flex justify-between border-b-2 pb-6 mb-6'>
+                        <p className='text-[20px] font-[gilroy-semibold]'>List Product</p>
+                        <p className='text-[20px] font-[gilroy-semibold]'>Quanlity</p>
+                        <p className='text-[20px] font-[gilroy-semibold]'>Sum</p>
+                      </div>
+                      <div className='flex flex-col gap-4'>
+                        {order.prods.map((prod) =>
+                          prod.variants.map((variant) => (
+                            <div className='flex items-center justify-between'>
+                              <div className='flex items-center gap-2 max-w-[400px] w-full'>
+                                <div className='flex-[0_0_86px] min-w-[86px] w-full'>
+                                  <img src={variant.Images} alt='' />
+                                </div>
+                                <div className=''>
+                                  <h5 className='text-sm leading-[1.5]'>{prod.name}</h5>
+                                  <div className='text-xs font-[gilroy-light]'>
+                                    Color:{' '}
+                                    <span
+                                      className={`w-3 h-3 rounded-full bg-[${variant.Color}] inline-block`}
+                                    ></span>
+                                  </div>
                                 </div>
                               </div>
+                              <div className='text-sm leading-[1.5] font-[gilroy-light]'>
+                                <span>{variant.Quantity}x</span>
+                              </div>
+                              <div className='text-sm leading-[1.5] font-[gilroy-light]'>
+                                <span>${prod.price.toFixed(2)}</span>
+                              </div>
                             </div>
-                            <div className='text-sm leading-[1.5] font-[gilroy-light]'>
-                              <span>{variant.Quantity}x</span>
-                            </div>
-                            <div className='text-sm leading-[1.5] font-[gilroy-light]'>
-                              <span>${prod.price.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        )),
-                      )}
-                      <div className='text-lg flex items-center justify-between pt-4 border-t border-[#c9c5c9]'>
-                        <span>Total:</span>
-                        <span>
-                          $
-                          {order.prods
-                            .reduce((total, product) => {
-                              return (
-                                total +
-                                product.price * product.variants.reduce((a, b) => a + b.Quantity, 0)
-                              );
-                            }, 0)
-                            .toFixed(2)}
-                        </span>
+                          )),
+                        )}
+                        <div className='text-lg flex items-center justify-between pt-4 border-t border-[#c9c5c9]'>
+                          <span>Total:</span>
+                          <span>
+                            $
+                            {order.prods
+                              .reduce((total, product) => {
+                                return (
+                                  total +
+                                  product.price *
+                                    product.variants.reduce((a, b) => a + b.Quantity, 0)
+                                );
+                              }, 0)
+                              .toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className='text-center'>No data</div>
               )}

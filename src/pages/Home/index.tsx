@@ -128,11 +128,12 @@ const Home = () => {
           .map((collection: CollectionType, index: number) => {
             const listProducts: CardItemProps[] = collection.products.map((product) => {
               return {
-                id: product.variants[0].id || '',
+                id: product.id || '',
                 name: product.name,
                 price: product.price,
                 color: product.variants.map((variant) => variant.color),
                 img_url: product.variants[0].images.imageThumbnail,
+                inventory: product.variants.reduce((acc, variant) => acc + variant.inventory, 0),
               };
             });
             return (
